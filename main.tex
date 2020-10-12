@@ -1,0 +1,106 @@
+\documentclass[12pt, masters-t, a5block]{usthesis}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{booktabs} % For formal tables
+\usepackage[]{algorithm2e}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{fancybox}
+\usepackage{subcaption}
+\usepackage{tabularx,rotating}
+\usepackage[colorlinks = true,
+            linkcolor = black,
+            urlcolor  = blue,
+            citecolor = blue,
+            anchorcolor = blue]{hyperref}
+\usepackage[thinc]{esdiff}
+\usepackage{usbib}%............................. Bibliography
+%\bibliographystyle{acm}%................. Auhor-year style
+\bibliographystyle{usmeg-n}%................. Auhor-year style
+\renewcommand{\bibname}{List of References}
+\onehalfspacing
+%\setcitestyle{square}
+
+\DeclareMathOperator*{\argmin}{argmin}
+
+\usepackage{eso-pic}%............................ Shipout commands for watermark
+    \newcommand*{\WaterMark}[2][0.15\paperwidth]{%
+        \AddToShipoutPicture*{\AtTextCenter{%
+                \parbox[c]{0pt}{\makebox[0pt][c]{%
+                    \includegraphics[width=#1]{#2}}}}}}
+        
+
+%==== TITLE PAGE ====================================================
+\title{Explaining neural networks used for modeling credit risk.}
+
+\author{Z.\ Mohamed}{Zhunaid Mohamed}
+
+\faculty{{Faculty of Science}}
+
+\degree{MSc (CS)}
+       {Master of Science (Computer Science)}
+
+\supervisor{Prof.\ W.\ Visser}
+\cosupervisor{Prof.\ B.\ Herbst, Dr.\ M.\ Hoffman}
+
+\setdate{12}{2020}
+
+\SetSponsor{The financial assistance of the National Research Foundation(NRF) towards this research is hereby acknowledged. Opinions expressed and conclusions arrived at,
+are those of the author and are not necessarily to be attributed to the NRF.}
+
+%==== END TITLE PAGE ====================================================
+
+\begin{document}
+
+ \frontmatter
+ %\WaterMark{UScrest-WM}
+ \TitlePage
+  \clearpage
+  
+ \DeclarationDate{2020/12/10}
+ \DeclarationPage
+  \clearpage
+ 
+ \address{Department of Computer Science,\\
+        University of Stellenbosch,\\
+        Private Bag X1, Matieland 7602, South Africa.
+             }
+             
+\begin{abstract}             
+    Calculating risk before providing loans is a common problem that credit companies face. The most common solution is credit employees manually assessing the risk of a client by reviewing their credit portfolios. This can be a slow process and is prone to human error. Recently credit companies have been adopting machine learning techniques in order to automate this process, however this has been limited to linear techniques due to interpretability being a strict requirement. Neural networks could provide significant improvements to the way credit risk is modeled, however these are still seen as black boxes. In this work we compare various techniques which claim to provide interpretability into these black boxes. We also use these techniques to provide explanations on a neural network trained on synthesized credit data.
+\end{abstract}
+ \tableofcontents
+ \clearpage
+
+ \listoffigures
+ \clearpage
+ 
+ \listoftables
+ \clearpage
+
+ \include{frontmatter/Nomencl}
+ \mainmatter
+
+
+
+ %==== Evaluation Section ========================================================
+ \include{Introduction}
+ \include{Related}
+ \include{Background}
+ \include{Evaluation}
+ \include{Credit}
+ \include{Conclusions}
+ %==== END Evaluation Section ====================================================
+
+
+
+% Bibliography
+\bibliography{references}
+
+\end{document}
