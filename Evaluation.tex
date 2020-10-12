@@ -1,7 +1,7 @@
 
 
-\chapter{Evaluation}
-In this section we use LIME, SHAP and Lucid (for image-based models) on various types of models to gain an understanding on how predictions on different model architectures are explained.
+\chapter{Evaluation} \label{sect-evaluation}
+In this chapter we use LIME, SHAP and Lucid (for image-based models) on various types of models to gain an understanding on how predictions on different model architectures are explained.
 
 \section{House Prices}
 We start off by training a \emph{Random Forest Regressor} for predicting house prices as introduced in section \ref{sect-intro-problem}. We make use of the  Boston Housing Dataset which contains US census data concerning houses in various areas around the city of Boston. Each sample corresponds to a unique area and has about a dozen measures. Alongside with price, the dataset also provides information such as Crime (CRIM), areas of non-retail business in the town (INDUS), the age of people who own the house (AGE), alongside many other attributes.  The dataset contains 506 samples where the target variable is the median value of owner-occupied homes in \$1000's (MEDV).
@@ -14,7 +14,7 @@ Figure \ref{fig:lime-house} is the explanation LIME provides for an area in Bost
   \label{fig:lime-house}
 \end{figure}
 \subsection{SHAP}
-Figure \ref{fig:shap-house-single} is the explanation SHAP provides for the same Boston area used in LIME. It shows features contributing to push the prediction from the base value. The base value is the average model output over the training dataset we passed. The red values have a positive impact on our prediction and the blue values a negative impact. The explanation provided is a lot different to that of LIME's, because the SHAP values represent how each feature affects the base value.
+Figure \ref{fig:shap-house-single} is the explanation SHAP provides for the same Boston area used in LIME. The base value is the average model output over the training dataset. The figure highlights how each feature contributes to pushing the prediction from the base value. The red values have a positive impact on the prediction and the blue values a negative impact. The explanation provided is a lot different to that of LIME's, because the SHAP values represent how each feature affects the base value.
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/house_indv_shap.png}
   \caption{SHAP explanation for a single area in Bostons median price.}
@@ -39,7 +39,7 @@ Since there are $28 \times 28 = 784$ potential features, LIME creates a perturbe
 \end{figure}
 
 \subsection{SHAP}
-When making use of SHAP we are able to take an expectation of multiple samples in order to gain a more accurate representation of the attributed SHAP values, for this problem we took a set of 100 samples. In Figure \ref{fig:shap-mnist} we visualize our SHAP values over 4 different samples, for the 4 input images SHAP displays the SHAP values for the prediction to each class. The red masks are the pixels which attributed towards that class while the blue pixels attributed against that class.
+When making use of SHAP we are able to take an expectation of multiple samples in order to gain a more accurate representation of the attributed SHAP values, for this problem we took a set of 100 samples. In Figure \ref{fig:shap-mnist} we visualize the SHAP values over 4 different samples, for the 4 input images SHAP displays the SHAP values for the prediction to each class. The red masks are the pixels which attributed towards that class while the blue pixels attributed against that class.
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/Shap_mnist.jpg}
   \caption{SHAP values for 4 digits.}
@@ -47,7 +47,7 @@ When making use of SHAP we are able to take an expectation of multiple samples i
 \end{figure}
 
 \subsection{Lucid}
-For Lucid we look at the spatial activations into two of our hidden convolutional layers labeled \emph{Conv2} and \emph{Conv3} respectively. Lucid provides a user interactive interface for viewing the activations, however in this example we will showcase static visual feedback. In Figure \ref{fig:lucid-mnist} for the two hidden layers \emph{Conv1} and \emph{Conv2} we are able to use spatial activations to see where and how much a specific set of pixels in the Conv1 Layer attributed in the target layer Conv2. The orange square is the set of pixels we are looking at in the starting layer and the whitened pixels in the target layer is where the activations happen
+For Lucid we look at the spatial activations into two of the hidden convolutional layers labeled \emph{Conv2} and \emph{Conv3} respectively. Lucid provides a user interactive interface for viewing the activations, however in this example we will showcase static visual feedback. In Figure \ref{fig:lucid-mnist} for the two hidden layers \emph{Conv1} and \emph{Conv2} we are able to use spatial activations to see where and how much a specific set of pixels in the Conv1 Layer attributed in the target layer Conv2. The orange square is the set of pixels we are looking at in the starting layer and the whitened pixels in the target layer is where the activations happen
 
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/Lucid_mnist.jpg}
@@ -89,7 +89,7 @@ In Figure \ref{fig:lucid-cat} we once again look at spatial activations between 
 The goal of the \emph{IMDB sentiment analysis} problem is to classify whether a movie review is positive or negative. The dataset consists 25000 \emph{training} samples and 25000 \emph{tests sample} where is sample is a vector of size $80\times1$. Each sample is a word embedding representing which words are present and in what order.
 
 \subsection{LIME}
-In Figure \ref{fig:lime-imdb} an attribution value is given to each individual word in the review, in this example we only show 10 words which had the largest impact. Our model predicted that the review was negative, some words such as ``of'' and ``with'' by human understanding does not inherently have negative connotations, however in the context of this review it was shown that it was likely paired with negative words such as ``lies''. Due to domain knowledge being needed, there is always some human interaction and if we have thousands of words that we are attributing on, it may become difficult to understand.
+In Figure \ref{fig:lime-imdb} an attribution value is given to each individual word in the review, in this example we only show 10 words which had the largest impact. The model predicted that the review was negative, some words such as ``of'' and ``with'' by human understanding does not inherently have negative connotations, however in the context of this review it was shown that it was likely paired with negative words such as ``lies''. Due to domain knowledge being needed, there is always some human interaction and if we have thousands of words that we are attributing on, it may become difficult to understand.
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/IMDB_explanation_1.png}
   \caption{The results of the attribution where the words which had the most impact towards the prediction are sorted by magnitude. Blue represents it being a negative review and orange represents positive.}
@@ -98,7 +98,7 @@ In Figure \ref{fig:lime-imdb} an attribution value is given to each individual w
 
 
 \subsection{SHAP}
-In Figure \ref{fig:shap-imdb} we have chosen \emph{positive} to be the primary class of prediction. In this case SHAP orders the words by magnitude of attribution and the left side indicated words that attributed towards (increased the probability) of our primary class and the right side indicates words which attributed against (decreased the probability) our primary class. Since the predicted class was \emph{negative} we can see how the negative attributions outweighed the positive attributions resulting in an output class of negative.
+In Figure \ref{fig:shap-imdb} we have chosen \emph{positive} to be the primary class of prediction. In this case SHAP orders the words by magnitude of attribution and the left side indicated words that attributed towards (increased the probability) of the primary class and the right side indicates words which attributed against (decreased the probability) the primary class. Since the predicted class was \emph{negative} we can see how the negative attributions outweighed the positive attributions resulting in an output class of negative.
 
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/SHAP_IMDB.png}
@@ -114,7 +114,7 @@ In this section we attempt to gain intuition into LIME and SHAP by showing the r
 \begin{align*}
 w_1 = 5,\ w_2 = 3,\ w_3 = 4,\ w_4 = 9,\ w_5 = 1,
 \end{align*}
-in order to see the importance ratios between our weights we normalize them to unity,
+in order to see the importance ratios between the weights we normalize them to unity,
 \begin{align*}
     w_1 = 0.227, \ w_2 = 0.136, \ w_3 =  0.18 ,\ w_4 = 0.409, \ w_5 = 0.045.
 \end{align*}
@@ -161,7 +161,7 @@ and for $X_2$,
     \end{split}
 \end{flalign*}
 therefore $X_1$ belongs to the \emph{Negative} class and $X_2$ to the \emph{Positive} class.
-We pass these two inputs to the Tabular Explainer of LIME in order to extract the feature attributions from the explanations. The visualization produced by LIME shows the feature attributions rounded to 2 significant digits, however for better accuracy our comparisons will use 3 significant digits. In Figure \ref{fig:lime-ground} we can see the attribution values which LIME assigns to each class for instance $X_1$,
+We pass these two inputs to the Tabular Explainer of LIME in order to extract the feature attributions from the explanations. The visualization produced by LIME shows the feature attributions rounded to 2 significant digits, however for better accuracy the comparisons will use 3 significant digits. In Figure \ref{fig:lime-ground} we can see the attribution values which LIME assigns to each class for instance $X_1$,
 \begin{align*}
     \phi_1 = 0.069, \ \phi_2 = 0.042, \ \phi_3 = 0.056 ,\ \phi_4 = 0.11, \ \phi_5 = 0.013,
 \end{align*}
@@ -191,11 +191,11 @@ A limitation of LIME that we have discussed before is that it only explains a si
 
 
 \subsection{SHAP}
-SHAP allows us to use our entire training set of 500 samples as background samples and gain attribution values which are averaged over the entire data set. We use \emph{Kernel SHAP} for this experiment since our model is not a Neural Network. The feature attribution values that we have derived from SHAP and normalized to unity are,
+SHAP allows us to use the entire training set of 500 samples as background samples and gain attribution values which are averaged over the entire data set. We use \emph{Kernel SHAP} for this experiment since our model is not a Neural Network. The feature attribution values that we have derived from SHAP and normalized to unity are,
  \begin{align*}
     \phi_1 = 0.211, \ \phi_2 = 0.126, \ \phi_3 = 0.167 ,\ \phi_4 = 0.44, \ \phi_5 = 0.057.
 \end{align*}
-Figure \ref{fig:shap-ground} shows how each feature contributed towards the models prediction over the entire dataset for the \emph{Positive} class. The more red a point is the higher that particular feature value was, where as more blue indicates a lower value. The x-axis indicates the SHAP value, where the higher the value is the more that particular feature attributed towards the probability of the \emph{Positive} class and the lower it is the more it attributed against it. From this Figure we can see that Feature 1 to 3 attributed towards the \emph{Positive} class with Feature 1 attributing the most and Feature 2 the least. We can also see that Feature 4 attributed the most against it and Feature 5 the least. These results are inline with how we have defined our weights and from this graph we are able to visualize the different attributions between samples and their variances.
+Figure \ref{fig:shap-ground} shows how each feature contributed towards the models prediction over the entire dataset for the \emph{Positive} class. The more red a point is the higher that particular feature value was, where as more blue indicates a lower value. The x-axis indicates the SHAP value, where the higher the value is the more that particular feature attributed towards the probability of the \emph{Positive} class and the lower it is the more it attributed against it. From this Figure we can see that Feature 1 to 3 attributed towards the \emph{Positive} class with Feature 1 attributing the most and Feature 2 the least. We can also see that Feature 4 attributed the most against it and Feature 5 the least. These results are inline with how we have defined the weights and from this graph we are able to visualize the different attributions between samples and their variances.
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/shap_ground.png}
 \caption{SHAP explanation for our chosen input $X_1$}
@@ -203,7 +203,7 @@ Figure \ref{fig:shap-ground} shows how each feature contributed towards the mode
 \end{figure}
 
 \subsection{Comparison}
-We have tabulated our results for comparison purposes in Figure \ref{fig:weight-tab}. We have also graphed the weights and attributions in Figure \ref{fig:weight-graph} for better visualization.We can see that the attribution values are fairly accurate in describing our defined weights and the ratios of feature importance are comparable to those of our model. From the results we have gathered, we can conclude that LIME and SHAP are able to generate fairly accurate linear estimations of a linear model by only using it's prediction results. These results allow us to gain some trust in LIME and SHAP, however further experimentation is needed to see if complex neural networks can also be approximated well.
+We have tabulated the results for comparison purposes in Figure \ref{fig:weight-tab}. We have also graphed the weights and attributions in Figure \ref{fig:weight-graph} for better visualization.We can see that the attribution values are fairly accurate in describing the defined weights and the ratios of feature importance are comparable to those of our model. From the results we have gathered, we can conclude that LIME and SHAP are able to generate fairly accurate linear estimations of a linear model by only using it's prediction results. These results allow us to gain some trust in LIME and SHAP, however further experimentation is needed to see if complex neural networks can also be approximated well.
 \begin  {figure}[!htpb]
   \includegraphics[width=\linewidth]{Evaluation_Images/weight_table.png}
    \caption{Comparison of weights.}

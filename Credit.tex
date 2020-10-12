@@ -3,30 +3,32 @@
 \chapter{Credit Case Study}
 
 \section{Problem Statement}
-Companies which operate in the credit environment want to see returns on their investments. Before a loan is granted to a prospective client the appropriate risk analysis needs to be performed. In many instances this is a manual process where a credit employee has to assess a clients credit portfolio and ascertain if they are eligible for a loan and if so, on what terms. As most manual processes it can be slow and prone to human-error. By adopting machine-learning we are able to eliminate the human risk factor and significantly increase the speed. Linear modelling techniques such as \emph{Logistic Regression} are the preferred choice due to them being inherently interpretable. Interpretability is a strict requirement due to the need to understand why the model is making the decisions that it does. Linear models are however very limited in what they can do and by using Neural Networks or other nonlinear models we may be able to significantly increase our accuracy at identifying risk, however such techniques are generally seen as a \emph{black-box}. In this section we use SHAP in order to gain some interpretability into credit risk Neural Networks so that they could be considered as possible solutions.
+Companies which operate in the credit environment want to see returns on their investments. Before a loan is granted to a prospective client the appropriate risk analysis needs to be performed. In many instances this is a manual process where a credit employee has to assess a clients credit portfolio and ascertain if they are eligible for a loan and if so, on what terms. As most manual processes it can be slow and prone to human-error. By adopting machine-learning we are able to eliminate the human risk factor and significantly increase the speed. Linear modelling techniques such as \emph{Logistic Regression} are the preferred choice due to them being inherently interpretable. Interpretability is a strict requirement due to the need to understand why the model is making the decisions that it does. Linear models are however very limited in what they can do and by using Neural Networks or other nonlinear models we may be able to significantly increase the accuracy at identifying risk, however such techniques are generally seen as a \emph{black-box}. In this chapter we use SHAP in order to gain some interpretability into credit risk Neural Networks so that they could be considered as possible solutions.
 
-\section{Our Data set} Up until this point we have used our tools on \emph{toy} examples where the data has been engineered to work well with machine-learning. In this section we will be using a proprietary synthetic credit dataset which has been provided to us by \emph{Praelexis} which aims to simulate actual features used by credit companies to calculate potential client risk. Our dataset consists of a total of $200000$ client samples where $28768$ defaulted on their loan and the remaining $171232$ did not. As we can see we have a heavy class imbalance in our data with a ratio of roughly $85:15$. In practice this ratio of imbalance can be a lot higher \cite{doi:10.1142/9789812813312_0009}. The trained model may be skewed to more likely predict the most present class. How we solve this issue is discussed in section \ref{sec-class-imbalance}.
+\section{The Data set} Up until this point we have used our tools on \emph{toy} examples where the data has been engineered to work well with machine-learning. In this chapter we will be using a proprietary credit risk dataset which has been provided to us by \emph{Praelexis} which aims to simulate actual features used by credit companies to calculate potential client risk. Our dataset consists of a total of $200000$ client samples where $28768$ defaulted on their loan and the remaining $171232$ did not. As we can see we have a heavy class imbalance in the data with a ratio of roughly $85:15$. In practice this ratio of imbalance can be a lot higher \cite{doi:10.1142/9789812813312_0009}. The trained model may be skewed to more likely predict the most present class. How we solve this issue is discussed in chapter \ref{sec-class-imbalance}.
 
 \section{Aim}
- Our aim is see if we can provide enough interpretability into a credit Neural Network so that it may be considered a possible alternative to linear models by credit companies looking to adopt machine-learning. In order to achieve this we train a \emph{Logistic Regression} model which is inherently interpretable and a generic feedfoward Neural Network and compare their interpretability. The goal of these models is to predict a probability that a client will default on a loan given their input features. As we have seen in the \emph{Evaluation} section, SHAP is superior to LIME in every way but speed and therefore we shall use SHAP as our preferred tool for interpretation.
+ Our aim is see if we can provide enough interpretability into a credit Neural Network so that it may be considered a possible alternative to linear models by credit companies looking to adopt machine-learning. In order to achieve this we train a \emph{Logistic Regression} model which is inherently interpretable and a generic feedfoward Neural Network and compare their interpretability. The goal of these models is to predict a probability that a client will default on a loan given their input features. As we have seen in chapter \ref{sect-evaluation}, SHAP is superior to LIME in every way but speed and therefore we shall use SHAP as our preferred tool for interpretation.
  
 \section{Weights of evidence}
- The weights-of-evidence (WOE) transformation \cite{Siddiqi2005CreditRS} is a nonlinear transformation of the original variables. It is used measure the strength of each attribute at separating good and bad loans. It can be seen as the measure of the difference in the proportioning of good and bad within each attribute (i.e., the odds of a person of that attribute being good or bad) \cite{Siddiqi2005CreditRS}.  Continuous variables are first converted to categorical variables through a process called \emph{binning}. Using the information from our training data we calculate the WOE value for each bin. Each client is either considered to be good (0) or bad (1).
+ The weights-of-evidence (WOE) transformation \cite{Siddiqi2005CreditRS} is a nonlinear transformation of the original variables. It is used measure the strength of each attribute at separating good and bad loans. It can be seen as the measure of the difference in the proportioning of good and bad within each attribute (i.e., the odds of a person of that attribute being good or bad) \cite{Siddiqi2005CreditRS}.  Continuous variables are first converted to categorical variables through a process called \emph{binning}. Using the information from the training data we calculate the WOE value for each bin. Each client is either considered to be good (0) or bad (1).
  The WOE can be calculated as,
   \begin{equation}
      \mbox{WOE} = \left[ \ln{\left(\frac{\mbox{Distr Good}}{\mbox{Distr Bad}}\right)} \right] 
      \label{eq:woe}
  \end{equation}
-We can see an example of creating WOE bins for a variable  in Figure \ref{table:woe}. The \emph{boundaries} are the bin ranges and can either be manually or automatically chosen. The \emph{Count good} and \emph{Count bad} is extracted from the training dataset and by using (\ref{eq:woe}) we are able calculate the WOE value for each bin. 
+We can see an example of creating WOE bins for a variable  in Figure \ref{table:woe}. The \emph{boundaries} are the bin ranges and can either be manually or automatically chosen. The \emph{Count good} and \emph{Count bad} is extracted from the training dataset and by using (\ref{eq:woe}) we are able calculate the WOE value for each bin. In Figure \ref{fig-woe-binning} we can see an example of WOE binning for a binary classifier. The axis are the values of the two features. The red star and blue dot represent the 2 classes. The shaded parts are the values which will be assigned to the 2 classes after the WOE transformations. This illustrates how the WOE transformation allows us to construct a nonlinear decision boundary.
+
  \subsection{Benefits of WOE}
  \begin{itemize}
      \item Missing values are separated into their own bins and is therefore easier to handle.
      \item Provides a linear relationship with log odds.
      \item It can treat outliers. Extreme values which fall outside the average range are given their own bin.
-     \item We are able to determine the stability of our model by comparing the WOE values of our training and unseen data.
+     \item We are able to determine the stability of our model by comparing the WOE values of the training and unseen data.
      \item Converts continuous variables into categorical variables so that there is no distinction between the 2.
  \end{itemize}
- For our dataset we have chosen to use \emph{automatic binning} because we want our preprocessing steps to be as automated as possible. This is to prevent our domain knowledge from affecting the produced explanations.
+ For our dataset we have chosen to use \emph{automatic binning} because we want the preprocessing steps to be as automated as possible. This is to prevent our domain knowledge from affecting the produced explanations.
+ 
  
 
  
@@ -35,7 +37,7 @@ We can see an example of creating WOE bins for a variable  in Figure \ref{table:
 \begin{center}
 \shadowbox{\begin{minipage}[t]{0.95\textwidth}%
     \begin{tabular}{cccccccc}
-       & Bin  &  Boundaries & Count good & Fraction good & Count bad & Fraction bad & WoE\\
+       & Bin  &  Boundaries & Count good & Distr good & Count bad & Distr bad & WoE\\
        \hline\\
        & $1$ & $(-\infty,1]$ & $1760$ & $0.0973$ & $798$ & $0.2033$ & $-0.37$ \\
        & $2$ & $(1,2]$ & $5238$ & $0.2896$ & $1 223$ & $0.3116$ & $-0.07$ \\
@@ -48,50 +50,58 @@ We can see an example of creating WOE bins for a variable  in Figure \ref{table:
 \par\end{center}
 \caption{WOE example}\label{table:woe}
 \end{table}
+
+\begin  {figure}[!htpb]
+\centering
+  \includegraphics[width=\linewidth]{Credit_Images/WOE_EXPLANATION.png}
+   \caption{Weights of evidence binning.}
+    \label{fig-woe-binning}
+\end{figure}
+
  
 
 
 
 \section{Metrics}
-Before we discuss our models architecture we introduce the metrics with which we use to measure the performance of our model. Firstly we introduce some terminology used within the metrics definitions. To provide some context, suppose we have a model that predicts whether an insurance claim made by a client is fraudulent or not. Fraudsters which have been correctly identified by our model are referred to as \emph{True Positives (TP)}, where as regular clients which are incorrectly identified as fraudsters are referred to as \emph{False Positives (FP)}. Regular Clients which are correctly identified are referred to as \emph{True Negatives (TN)}, where as fraudsters which are incorrectly identified as regular clients are referred to as \emph{False Negatives (FN)}.
+Before we discuss our models architecture we introduce the metrics with which we use to measure the performance of the model. Firstly we introduce some terminology used within the metrics definitions. To provide some context, suppose we have a model that predicts whether an insurance claim made by a client is fraudulent or not. Fraudsters which have been correctly identified by the model are referred to as \emph{True Positives (TP)}, where as regular clients which are incorrectly identified as fraudsters are referred to as \emph{False Positives (FP)}. Regular Clients which are correctly identified are referred to as \emph{True Negatives (TN)}, where as fraudsters which are incorrectly identified as regular clients are referred to as \emph{False Negatives (FN)}.
 \subsection{Accuracy}
- In most examples the common metric that is used to measure how well a model performs is the \emph{accuracy} measure, however it does not work as well if our dataset has a class imbalance. Suppose in our previous example of identifying fraudulent claims that our training dataset consisted of 95\% legitimate claims and 5\% fraudulent claims. If we engineer our model to simply predict every claim to be legitimate then we will achieve a 95\% accuracy, however our model would never be able to identify fraudulent claims and therefore does not solve our problem. Although a high accuracy does not necessarily mean a model is performing well, a low accuracy can be indicative of a poor performing model and therefore has relevance. Using our previously defined terms we can define accuracy as,
+ In most examples the common metric that is used to measure how well a model performs is the \emph{accuracy} measure, however it does not work as well if the dataset has a class imbalance. Suppose in the previous example of identifying fraudulent claims that the training dataset consisted of 95\% legitimate claims and 5\% fraudulent claims. If we engineer the model to simply predict every claim to be legitimate then we will achieve a 95\% accuracy, however the model would never be able to identify fraudulent claims and therefore does not solve our problem. Although a high accuracy does not necessarily mean a model is performing well, a low accuracy can be indicative of a poor performing model and therefore has relevance. Using the previously defined terms we can define accuracy as,
 \begin{equation}
     \mbox{Accuracy} = \frac{TN + TP}{FN + FP + TN + TP}
 \end{equation}
 \subsection{Precision}
-An important metric is called \emph{precision} which is the proportion of positive identifications that were actually correct. In our previous example of identifying fraudulent claims, precision would be the percentage of \emph{actual} fraudsters in the group of people that our model has predicted to be fraudsters. Therefore using this measure we are able to determine the ratio of how many of our regular clients we have falsely predicted to be a fraudster. We define precision as,
+An important metric is called \emph{precision} which is the proportion of positive identifications that were actually correct. In the previous example of identifying fraudulent claims, precision would be the percentage of \emph{actual} fraudsters in the group of people that the model has predicted to be fraudsters. Therefore using this measure we are able to determine the ratio of how many of our regular clients we have falsely predicted to be a fraudster. We define precision as,
 \begin{equation}
     \mbox{Precision} = \frac{TP}{TP + FP}
 \end{equation}
 \subsection{Recall}
-\emph{Recall} is similar to precision in that it is the proportion of actual positives that were identified correctly. In our example recall would be the percentage of fraudsters our model was able to find in the entire \emph{pool} of fraudsters. Therefore we define recall as,
+\emph{Recall} is similar to precision in that it is the proportion of actual positives that were identified correctly. In the example recall would be the percentage of fraudsters the model was able to find in the entire \emph{pool} of fraudsters. Therefore we define recall as,
 \begin{equation}
     \mbox{Recall} = \frac{TP}{TP + FN}
 \end{equation}
 \subsection{Trade offs}
-Although precision and recall both seem like metrics that we should aim to maximize in our model, in practice it is usually not possible. We have to select the metric which is most valuable to us based on our problem and use that as our performance measure while keeping the others in mind. In the case of our fraudulent model we have to weigh whether marking regular clients as fraudsters (Precision) or identifying less actual fraudsters overall (Recall) is more detrimental to our business. A possible solution is assigning a cost to each error made in our predictions in order make more informed decisions.
+Although precision and recall both seem like metrics that we should aim to maximize in our model, in practice it is usually not possible. We have to select the metric which is most valuable to us based on the problem and use that as the performance measure while keeping the others in mind. In the case of our fraudulent model we have to weigh whether marking regular clients as fraudsters (Precision) or identifying less actual fraudsters overall (Recall) is more detrimental to our business. A possible solution is assigning a cost to each error made in our predictions in order make more informed decisions.
 \section{Preprocessing}
 \subsection{Feature Standardization}
 
-Before we begin training our model we first have to \emph{standardize} our features. This entails subtracting the mean and scaling to unit variance so that our standardized data has a mean($\mu$) of 0 and a standard deviation($\sigma$) of 1,
+Before we begin training our model we first have to \emph{standardize} the features. This entails subtracting the mean and scaling to unit variance so that the standardized data has a mean($\mu$) of 0 and a standard deviation($\sigma$) of 1,
 \begin{equation}
     X_{standardized} = \frac{X-\mu}{\sigma}
 \end{equation}
 This is needed so that features have a variance within the same magnitude, because if one feature has a variance magnitudes larger than others it might dominate the objective function and in turn make the estimator rely too much on it and unable to learn from other features. 
-\subsubsection{Effect on feature attributions} Standardizing our values changes their meaning to how far they are from the mean in terms of standard deviations. This means it is possible for strictly positive features to take on negative values when standardized. We have to account for this when observing our explanations.
+\subsubsection{Effect on feature attributions} Standardizing the values changes their meaning to how far they are from the mean in terms of standard deviations. This means it is possible for strictly positive features to take on negative values when standardized. We have to account for this when observing the explanations.
 \subsubsection{Weights of evidence}
-For our WOE models the distributions of good and bad are used, which is already a form of standardization. Therefore we only perform explicit feature standardization for our raw input models.
-\subsection{Splitting our dataset}
-Before we start using our data we first have to split our dataset into 3 isolated sets namely \emph{training set}, \emph{validation set}, and \emph{test} set. The test and validation set will each encompass 20\% of our total data and the training set the remaining 60\%. The training set is what we use for training our model, the validation set is used to fine-tune any parameters specific to our model such as our regularizer coefficient which we will discuss in the \emph{feature selection} section, and the test set is only used at the end in order to evaluate our models performance on unseen data. Since we have a heavy class imbalance in our dataset, we use a \emph{stratified} split which allows each of our 3 sets to maintain the ratio of class imbalance present in our overall dataset.
+For the WOE models the distributions of good and bad are used, which is already a form of standardization. Therefore we only perform explicit feature standardization for the raw input models.
+\subsection{Splitting the dataset}
+Before we start using the data we first have to split the dataset into 3 isolated sets namely \emph{training set}, \emph{validation set}, and \emph{test} set. The test and validation set will each encompass 20\% of the total data and the training set the remaining 60\%. The training set is what we use for training the model, the validation set is used to fine-tune any parameters specific to the model such as the regularizer coefficient which we will discuss in the  next section , and the test set is only used at the end in order to evaluate the models performance on unseen data. Since we have a heavy class imbalance in the dataset, we use a \emph{stratified} split which allows each of the 3 sets to maintain the ratio of class imbalance present in the overall dataset.
 \subsection{Feature Selection}
-Since we have 33 features present in our dataset, we look to reduce the number of features by carefully removing those which are better explained by other features or add nothing of value to our model.  For our model which uses the raw features we will make use of a simple linear classifier with an L1 penalizer for feature selection. Since by default L1 regularization is able set weight coefficients to 0 we are able remove weights which have little or no contribution to our model. For our WOE model, we will be using Information Values extracted from the WOE for feature selection.
+Since there are 33 features present in the dataset, we look to reduce the number of features by carefully removing those which are better explained by other features or add nothing of value to the model.  For the model which uses the raw features we will make use of a simple linear classifier with an L1 penalizer for feature selection. Since by default L1 regularization is able set weight coefficients to 0 we are able remove weights which have little or no contribution to the model. For the WOE model, we will be using Information Values extracted from the WOE for feature selection.
 
 \subsubsection{Benefits of feature selection}
 \begin{itemize}
     \item Decreased training time.
     \item More stability if correlated variables are removed.
-    \item Improve our classification scheme by removing low contributing features.
+    \item Improve the classification scheme by removing low contributing features.
     \item Explanations provided by SHAP are easier interpreted due to less features needing to be explained.
 \end{itemize}
 
@@ -100,7 +110,7 @@ Since we have 33 features present in our dataset, we look to reduce the number o
  \begin{equation}
     \mbox{IV} =  \sum^{n}_{i=1}(\mbox{Distr Good}_{i} - \mbox{Distr Bad}_{i}) \cdot \mbox{WOE}_{i}
  \end{equation}
- substituting our equation for WOE from (\ref{eq:woe}),
+ substituting the equation for WOE from (\ref{eq:woe}),
  \begin{equation}
      \mbox{IV} = \sum^{n}_{i=1}(\mbox{Distr Good}_{i} - \mbox{Distr Bad}_{i}) \cdot \ln{\left(\frac{\mbox{Distr Good}}{\mbox{Distr Bad}}\right)}_{i}
  \end{equation}
@@ -122,7 +132,7 @@ Since we have 33 features present in our dataset, we look to reduce the number o
 \par\end{center}
 \caption{IV Interpretation}\label{table:iv}
 \end{table}
-By calculating the IV of each of our features we are able to keep features within a certain threshold and remove the rest. For our case we have chosen our minimum threshold as $0.02$ and maximum threshold as $0.6$. Looking at Figure \ref{fig-IV-Thresh} we can see the IV of all our features and which features have been chosen to be excluded and included according to our thresholds. We have decreased our number of features from $33$ to $22$.
+By calculating the IV of each of the features we are able to keep features within a certain threshold and remove the rest. For our case we have chosen the minimum threshold as $0.02$ and maximum threshold as $0.6$. Looking at Figure \ref{fig-IV-Thresh} we can see the IV of all the features and which features have been chosen to be excluded and included according to our thresholds. We have decreased the number of features from $33$ to $22$.
 
 \begin  {figure}[!htpb]
 \centering
@@ -131,7 +141,7 @@ By calculating the IV of each of our features we are able to keep features withi
     \label{fig-IV-Thresh}
 \end{figure}
 
-\subsubsection{L1 Regularizer} For our raw features we use a model trained with a L1 regularizer which is referred to as a \emph{Lasso} model for feature selection. L1 regularization is able to assign higher weighting to features which play a larger role in classification and in turn can set those that do the least to 0. 
+\subsubsection{L1 Regularizer} For the raw features we use a model trained with a L1 regularizer which is referred to as a \emph{Lasso} model for feature selection. L1 regularization is able to assign higher weighting to features which play a larger role in classification and in turn can set those that do the least to 0. 
 Given a linear model,
 \begin{equation}
 Y = \beta_{1}x_{1} + \beta_{2}x_{2} + ... + \beta_{0},
@@ -146,7 +156,7 @@ We add a regularization term with the L1 penalizer,
 \begin{equation}
         \sum_{i=1}^{m}(Y_{i} - \sum_{j=1}^{n} \beta_{j}x_{ij})^{2} + \lambda \sum_{j=1}^{n} |\beta_{j}|,
 \end{equation}
-where $\lambda$ is a coefficient that we can tune to adjust how aggressively we constrain our weights. Figure \ref{fig-lasso} demonstrates the constraint region built by the L1 regularizer for a model which contains two weight coefficients $\beta_{1}$ and $\beta_{2}$. $\overset{\wedge}{\beta}$ is the unconstrained least squares estimate. The red ellipses are the contours of the least squares error function. The blue area represents the feasible region $|\beta_{1}| + |\beta_{2}| \leq t$ of the constraints introduced by our penalty where $t$ is the coefficient of our regularizer. The possible values are those where the contour and diamond meet and as we can see  at 4 points of the diamond one of the weight coefficients are 0. This extends to higher dimensions where the are more possibilities of weights being 0. We are looking for the intersection of the red ellipses and the blue region as the objective is to minimize the error function while maintaining the feasibility. Let $p$ be the number of features and therefore the dimensionality, in this case we have $p = 2$. When $p > 2$ the diamond becomes a rhomboid and has many corners flat edges and faces which have the opportunity to become 0.
+where $\lambda$ is a coefficient that we can tune to adjust how aggressively we constrain the weights. Figure \ref{fig-lasso} demonstrates the constraint region built by the L1 regularizer for a model which contains two weight coefficients $\beta_{1}$ and $\beta_{2}$. $\overset{\wedge}{\beta}$ is the unconstrained least squares estimate. The red ellipses are the contours of the least squares error function. The blue area represents the feasible region $|\beta_{1}| + |\beta_{2}| \leq t$ of the constraints introduced by the penalty where $t$ is the coefficient of the regularizer. The possible values are those where the contour and diamond meet and as we can see  at 4 points of the diamond one of the weight coefficients are 0. This extends to higher dimensions where the are more possibilities of weights being 0. We are looking for the intersection of the red ellipses and the blue region as the objective is to minimize the error function while maintaining the feasibility. Let $p$ be the number of features and therefore the dimensionality, in this case we have $p = 2$. When $p > 2$ the diamond becomes a rhomboid and has many corners flat edges and faces which have the opportunity to become 0.
 \begin  {figure}[!htpb]
 \centering
   \includegraphics[width=0.5\linewidth]{Credit_Images/Lasso-regression.png}
@@ -154,12 +164,12 @@ where $\lambda$ is a coefficient that we can tune to adjust how aggressively we 
     \label{fig-lasso}
 \end{figure}
 
-\subsubsection{Selecting our regularization coefficient}
-As discussed in the previous section the higher we set the value of our regularization term the stricter we constrain our weight coefficients. Therefore the larger $\lambda$ is the stricter our feature selection is as more coefficients will be set to 0. In order to select a $\lambda$ that provides us with the best features we need to tune this as a hyper parameter by using our validation set. We need to make sure that we do not throw away any features that have information that cannot be explained by our selected features. Therefore we tune $\lambda$ by making it stricter and monitoring how it affects the performance of our model. In Figure \ref{fig-regularizer} we have plotted the results of the \emph{accuracy}, \emph{recall}, and \emph{precision} metrics against a stronger penalty. Note that the L1 coefficient in this case is inversely proportional to how strict our regularizer is. As we can see both the recall and precision takes quite a significant drop once $\lambda$ reaches $0.0001$. Therefore $0.001$ is the smallest that we can set $\lambda$ before we start noticing a drop in the performance of our model. Setting $\lambda$ to $0.001$ reduces our number of features from 33 to 17. This is a massive reduction while hardly losing any strength within our model, this may not be the most stable approach if we are looking to productionize this model but it allows our interpretation to be simpler to showcase due to the reduced number of attributions. These features are described in the \emph{Feature descriptions} section.
+\subsubsection{Selecting the regularization coefficient}
+As discussed in the previous section the higher we set the value of the regularization term the stricter we constrain the weight coefficients. Therefore the larger $\lambda$ is the stricter the feature selection is as more coefficients will be set to 0. In order to select a $\lambda$ that provides us with the best features we need to tune this as a hyper parameter by using our validation set. We need to make sure that we do not throw away any features that have information that cannot be explained by the selected features. Therefore we tune $\lambda$ by making it stricter and monitoring how it affects the performance of the model. In Figure \ref{fig-regularizer} we have plotted the results of the \emph{accuracy}, \emph{recall}, and \emph{precision} metrics against a stronger penalty. Note that the L1 coefficient in this case is inversely proportional to how strict the regularizer is. As we can see both the recall and precision takes quite a significant drop once $\lambda$ reaches $0.0001$. Therefore $0.001$ is the smallest that we can set $\lambda$ before we start noticing a drop in the performance of the model. Setting $\lambda$ to $0.001$ reduces the number of features from 33 to 17. This is a massive reduction while hardly losing any strength within the model, this may not be the most stable approach if we are looking to productionize this model but it allows the interpretation to be simpler to showcase due to the reduced number of attributions. These features are described in chapter \ref{sect-Feature-Descriptions}.
 \begin  {figure}[!htpb]
 \centering
   \includegraphics[width=\linewidth]{Credit_Images/Regularizer.png}
-   \caption{Choosing our L1 coefficient.}
+   \caption{Choosing the L1 coefficient.}
     \label{fig-regularizer}
 \end{figure}
 
@@ -168,7 +178,7 @@ Class imbalance has a significant effect on conventional classification techniqu
 \begin{equation}
   \mbox{ Assign to class} \ 1 \ \mbox{if} \ p(1|x) > (1 + r)^{-1} \mbox{and to class} \ 0 \ \mbox{otherwise}
 \end{equation}
-  We can incorporate these misclassification costs into our model by providing a weighting of classes which penalizes our model more for predicting the less present class incorrectly which is the \emph{default} class in our case. By using these bias class weights we may be able to identify more clients which may default, however we lose some accuracy in predicting non defaulting clients. 
+  We can incorporate these misclassification costs into our model by providing a weighting of classes which penalizes the model more for predicting the less present class incorrectly which is the \emph{default} class in our case. By using these bias class weights we may be able to identify more clients which may default, however we lose some accuracy in predicting non defaulting clients. 
 \begin{equation}
     \mbox{Class weights} = \frac{|X|}{|y| \cdot \left[ y_{1}, ..., y_{n} \right]}
 \end{equation}
@@ -181,13 +191,13 @@ By using the values in our dataset we get,
                          &= [0.584, 3.476]
     \end{split}
 \end{flalign}
-by using these class weights our model is penalized roughly $5.95$ times more for incorrectly classifying \emph{defaulting} clients as \emph{not defaulted}. This causes our weights to be optimized to predict the default class more. For our raw input models we will versions with and without these biased class weights and compare their results and how their interpretations differ.
+by using these class weights the model is penalized roughly $5.95$ times more for incorrectly classifying \emph{defaulting} clients as \emph{not defaulted}. This causes the weights to be optimized to predict the default class more. For the raw input models we will versions with and without these biased class weights and compare their results and how their interpretations differ.
 
 \section{Models}
 \subsection{Logistic Regression}
 Logistic Regression is a widely used technique. Even some Deep Neural Networks use it within their output layer. It is known to work well for binary classification problems and provides a soft prediction. 
 \subsubsection{Soft Predictions}
-A soft prediction refers to a prediction which gives the probability that a input belongs to a specific class, where as a hard prediction simply assigns a 0 or 1 regardless if the prediction was on the boundary between the two classes. In Figure \ref{fig:thresholds} we can see difference between the thresholding mechanisms used in hard and soft predictions, the x-axes represents the output before  we threshold and the y-axes is the value that after it goes through our activation function. When using a hard threshold the values are either set to 0 or 1. For soft threshold the value is set as a probability between 0 and 1, this allows us see the confidence of our model in our prediction. For example in Figure \ref{fig:thresholds} if our value is 0, hard thresholding will force it to 1, however soft thresholding would set it to 0.5 which indicates that it could belong to either class. 
+A soft prediction refers to a prediction which gives the probability that a input belongs to a specific class, where as a hard prediction simply assigns a 0 or 1 regardless if the prediction was on the boundary between the two classes. In Figure \ref{fig:thresholds} we can see difference between the thresholding mechanisms used in hard and soft predictions, the x-axes represents the output before  we threshold and the y-axes is the value that after it goes through the activation function. When using a hard threshold the values are either set to 0 or 1. For soft threshold the value is set as a probability between 0 and 1, this allows us see the confidence of the model in the prediction. For example in Figure \ref{fig:thresholds} if the value is 0, hard thresholding will force it to 1, however soft thresholding would set it to 0.5 which indicates that it could belong to either class. 
 
 \subsubsection{Making a prediction using Logistic Regression}
 Given a general linear model,
@@ -195,7 +205,7 @@ Given a general linear model,
     y = \sum^{n}_{i = 1} w_{i} \cdot x_{i} + w_{0},
     \label{eq:linear}
 \end{equation}
-where $n$ is the number of features in our input.
+where $n$ is the number of features in the input.
 We introduce the logistic function, or more commonly referred to as \emph{sigmoid}\cite{10.5555/1671238},
 \begin{equation}
     \mbox{Sigmoid}(z) = \frac{1}{1 + e^{-z}}
@@ -205,27 +215,27 @@ Substituting in (\ref{eq:linear}), this can be rewritten as,
     \mbox{Sigmoid}(w \cdot x + w_{0}) = \frac{1}{1 + e^{-(w \cdot x + w_{0})}}
     \label{eq:logistic}
 \end{equation}
-Once our model is trained, we substitute our input vector into (\ref{eq:logistic}) in order to make a prediction.
+Once the model is trained, we substitute the input vector into (\ref{eq:logistic}) in order to make a prediction.
 \begin{figure}
 \centering
-\begin{subFigure}{.5\textwidth}
+\begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=\linewidth]{Credit_Images/hard_threshold.png}
   \caption{Hard Threshold}
   \label{fig:hard-threshold}
-\end{subFigure}%
-\begin{subFigure}{.5\textwidth}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=\linewidth]{Credit_Images/soft_threshold.png}
   \caption{Soft Threshold}
   \label{fig:soft-threshold}
-\end{subFigure}
+\end{subfigure}
 \caption{Comparison of hard and soft thresholds\cite{10.5555/1671238}.}
 \label{fig:thresholds}
 \end{figure}
 \subsubsection{Cross entropy cost function}
-The cost function is a measure of how wrong the model is in terms of its ability to estimate the relationship between X and y. It can also be seen as the distance between our predicted labels and the actual labels.
-Let our the sigmoid function of our model be $h_{w}(x)$ and our cost function be $J(w)$ then,
+The cost function can be seen as a measurement of how incorrect the model is at estimating the relationship between the input $X$ and their corresponding labels $y$. It can also be seen as the distance between the predicted labels and the actual labels.
+Let the sigmoid function of the model be $h_{w}(x)$ and the cost function be $J(w)$ then,
 \abovedisplayskip=0pt\relax
 \[
 J(w) =
@@ -238,20 +248,20 @@ can be condensed as,
 \begin{equation}
 J(w) = - \frac{1}{m} \sum_{i=1}^{m} \left[ y^{(i)}log(h_{w}(x^{(i)})) + (1 - y^{(i)})log(1-h_{w}(x^{(i)}))\right]
 \end{equation}
-Now that we have our cost function, we need to somehow decrease it until our weights converge.
+Now that we have the cost function, we need to somehow decrease it until the weights converge.
 
 \subsubsection{Gradient Descent}
-In order to find the optimal parameters for our weights we have to minimize our cost function using gradient descent. Let $y$ be the true labels and $h_{w}(x)$ be our predicted labels. When using gradient descent, we set our weights to some initial value either randomly or by some initialization algorithm. We can update our weights by subtracting the derivative of the cost function,
+In order to find the optimal parameters for the weights we have to minimize the cost function using gradient descent. Let $y$ be the true labels and $h_{w}(x)$ be the predicted labels. When using gradient descent, we set the weights to some initial value either randomly or by some initialization algorithm. We can update the weights by subtracting the derivative of the cost function,
 
 \begin{equation}
 w_{j} \longleftarrow w_{j} - \alpha \cdot \nabla_{w}J(w)
 \end{equation}
-where $\alpha$ is referred to as the \emph{learning rate} which is how large the steps we take when updating our weights. Since $h_{w}$ is the sigmoid function we can simplify this to, 
+where $\alpha$ is referred to as the \emph{learning rate} which is how large the steps we take when updating the weights. Since $h_{w}$ is the sigmoid function we can simplify this to, 
 \begin{equation}
     w_{j} \longleftarrow w_{j} - \alpha \sum_{i=1}^{m}(h_{w}(x^{(i)}) - y^{(i)})x_{j}^{(i)}
 \end{equation}
-This continues until our weights have converged.
-In Figure \ref{fig-gradient-descent} we can how our weights update during gradient descent. We start at some initial weights and after each weight update iteration we try to reach the minimum of our cost function. When we reach we the minimum our weights are considered to have converged and our training as completed as we have found our optimal parameters. Note that most if not all of the popular optimization procedures in Neural Networks is based on this simple idea, because the gradient can be efficiently calculated using \emph{back-propagation}. It should also be noted that numerous important modifications have been made for the sake of efficiency and robustness.
+This continues until the weights have converged.
+In Figure \ref{fig-gradient-descent} we can how the weights update during gradient descent. We start at some initial weights and after each weight update iteration we try to reach the minimum of the cost function. When we reach we the minimum the weights are considered to have converged and the training is completed as we have found the optimal parameters. Note that most if not all of the popular optimization procedures in Neural Networks is based on this simple idea, because the gradient can be efficiently calculated using \emph{back-propagation}. It should also be noted that numerous important modifications have been made for the sake of efficiency and robustness.
 \begin {figure}[!htpb]
 \centering
   \includegraphics[width=\linewidth]{Credit_Images/GradientDescent.png}
@@ -260,7 +270,7 @@ In Figure \ref{fig-gradient-descent} we can how our weights update during gradie
 \end{figure}
 
 \subsubsection{Interpreting Logistic Regression} \label{sect:interpreting-logistic-regression}
-Since the outcome of Logistic Regression is a probability between 0 and 1, we can not simply look at the weight coefficients as a direct interpretation. Due to the weighted sum being transformed by the sigmoid function (\ref{eq:logistic}) into a probability the weights do not influence the probability linearly. Introducing the log odds function,
+Since the outcome of Logistic Regression is a probability between 0 and 1, we can not simply look at the weight coefficients as a direct interpretation. The weighted sum in the linear equation (\ref{eq:linear}) is transformed into a probability by the sigmoid function (\ref{eq:logistic}). Therefore the weights do not affect the probability linearly. Introducing the log odds function,
 
 \begin{equation}
     \log \left( \frac{P(y=1)}{1 - P(y=1)} \right) - \log \left( \frac{P(y=1)}{P(y=0)} \right) = w_{0} + w_{1}x_{1} + ... + w_{n}x_{n}
@@ -286,11 +296,11 @@ and removing many terms,
     \frac{odds_{x_{j}+1}}{odds} = \exp(w_{j}(x_{j} + 1) - w_{j}x_{j}) = \exp(w_{j})
     \label{eq-odds-ratio}
 \end{equation}
-The \emph{Odds Ratio (OR)} is a measure of association between exposure and an outcome. The OR represents the odds that an outcome will occur given a particular exposure, compared to the odds of the outcome occurring in the absence of that exposure \cite {Szumilas2010ExplainingRatios}.
+The \emph{Odds Ratio (OR)} can be seen as a measurement of the strength between 2 events. Given 2 events $A$ and $B$, we can define the OR as the ratio of the odds of A occurring in the presence of B compared to the odds of A occurring in the absence of B \cite {Szumilas2010ExplainingRatios}.
 \begin{itemize}
-    \item OR=$1$ Exposure does not affect odds of outcome
-    \item OR$>1$ Exposure associated with higher odds of outcome
-    \item OR$<1$ Exposure associated with lower odds of outcome
+    \item OR=$1$ The events $A$ and $B$ are independent.
+    \item OR$>1$ If $B$ is present then A has higher odds of occurring .
+    \item OR$<1$ If $B$ is absent then $A$ has higher odds of occurring.
 \end{itemize}
 Therefore according to according to (\ref{eq-odds-ratio}) a change in a feature by one unit changes the odds ratio (multiplicative) by a factor of $\exp(w_{j})$. Another interpretation is that by changing a feature's value by one unit increases the log odds ratio by the value of the corresponding weight \cite{molnar2019}. Interpretation is different depending on the feature type \cite{molnar2019}:
 \begin{itemize}
@@ -319,17 +329,10 @@ In table \ref{table:logistic} we can see an example of a Logistic Regression cla
 \end{table}
 
 \subsection{Feedforward Neural Network}
-We will be training a generic feedforward Neural Network with a single hidden layer. The architecture can be seen in Figure \ref{fig-ff-nn}. Every layer in our Neural Network is \emph{Fully Connected} which means that every incoming node is connected to every outgoing node. The input layer is simply our input features. Our \emph{hidden layer} contains $9$ nodes for our raw features and $11$ nodes for our WOE network. For both networks our output layer is a single node that uses the \emph{sigmoid} activation function which is the probability that the client will default. Our Neural Network only has a single hidden layer and is considered very small when compared to modern networks.
-
-\begin  {figure}[!htpb]
-\centering
-  \includegraphics[width=0.9\linewidth]{Credit_Images/Sample-of-a-feed-forward-neural-network.png}
-   \caption{Architecture of a generic Feedforward Neural Network \cite{inbook}.}
-    \label{fig-ff-nn}
-\end{figure}
+We will be training a generic feedforward Neural Network with a single hidden layer. The architecture can be seen in Figure \ref{fig-ff-nn}. Every layer in the Neural Network is \emph{Fully Connected} which means that every incoming node is connected to every outgoing node. The input layer is simply the input features. The \emph{hidden layer} contains $9$ nodes for the raw features and $11$ nodes for the WOE network. For both networks the output layer is a single node that uses the \emph{sigmoid} activation function which is the probability that the client will default. the Neural Network only has a single hidden layer and is considered very small when compared to modern networks.
 
 \subsection{Trainable weights}
-In order to show that a Neural Network is theoretically more powerful than Logistic Regression, we have to compare their \emph{trainable weights}. Trainable weights are the weights which our models will estimate in order to make a prediction. Theoretically the more weights we can estimate, the more accurate our predictions will be. However it is important that we account for \emph{overfitting} which is when our model corresponds too closely to our training data and thus fails to predict unseen data reliably. In practice there are other factors such as our networks architecture and preprocessing techniques which have an effect. We can calculate the trainable weights in our with,
+In order to show that a Neural Network is theoretically more powerful than Logistic Regression, we have to compare their \emph{trainable weights}. Trainable weights are the weights which models will estimate in order to make a prediction. Theoretically the more weights we can estimate, the more accurate the predictions will be. However it is important that we account for \emph{overfitting} which is when the model corresponds too closely to the training data and thus fails to predict unseen data reliably. In practice there are other factors such as the networks architecture and preprocessing techniques which have an effect. We can calculate the trainable weights with,
 
 \begin{equation*}
 \begin{split}
@@ -338,7 +341,7 @@ In order to show that a Neural Network is theoretically more powerful than Logis
     \mbox{NN} &= \mbox{Input weights} \cdot \mbox{Hidden weights} + \mbox{Hidden weights} \cdot \mbox{Output weights}
     \end{split}
 \end{equation*}
-We can see the comparison of the trainable weights between our models in Figure \ref{table:trainable}.
+We can see the comparison of the trainable weights between the models in Figure \ref{table:trainable}.
  \begin{table}[h!]
  \footnotesize
 \begin{center}
@@ -356,7 +359,7 @@ We can see the comparison of the trainable weights between our models in Figure 
 \end{table}
 %%%% RESULTS %%%%
 \section{Results}
-In this section we will compare the following models:
+In this chapter we will compare the following models:
 \begin{itemize}
     \item Logistic Regression with raw inputs.
     \item Logistic regression with raw inputs and altered class weights.
@@ -369,22 +372,22 @@ In this section we will compare the following models:
 \begin {figure}[!htpb]
 \centering
   \includegraphics[width=\linewidth]{Credit_Images/Results_Logistic.png}
-   \caption{Results of our Logistic Regression classifier.}
+   \caption{Results of the Logistic Regression classifier.}
     \label{fig-log-results}
 \end{figure}
 \begin {figure}[!htpb]
 \centering
   \includegraphics[width=\linewidth]{Credit_Images/NN_res.png}
-   \caption{Results of our Neural Network.}
+   \caption{Results of the Neural Network.}
     \label{fig-nn-results}
 \end{figure}
 
 \subsection{Comparison}
-Comparing the results from our Logistic Regression classifier in Figure \ref{fig-log-results} and Neural Network classifier in Figure \ref{fig-nn-results} their \emph{accuracy} is mostly the same with the only real difference being a slight increase in \emph{precision} and \emph{recall} in our Neural Network. From this it may seem that there is no reason to use a Neural Network classifier, however there are plenty of optimizations and various other network compositions that may provide better results. Our purpose is to provide interpretability and therefore we are not concerned with building the most robust network possible.
+Comparing the results from the Logistic Regression classifier in Figure \ref{fig-log-results} and Neural Network classifier in Figure \ref{fig-nn-results} their \emph{accuracy} is mostly the same with the only real difference being a slight increase in \emph{precision} and \emph{recall} in the Neural Network. From this it may seem that there is no reason to use a Neural Network classifier, however there are plenty of optimizations and various other network compositions that may provide better results. Our purpose is to provide interpretability and therefore we are not concerned with building the most robust network possible.
 \subsection{Normal vs Bias class weights}
-In both models when using the bias class weights discussed in the \emph{Class imbalance} section we see on average a $15\%$ drop in accuracy which is quite significant, however an enormous increase in \emph{recall} which means the bias versions are better at identifying clients which \emph{defaulted}. For credit companies where the purpose is to identify clients which may default on their loans, the bias weights provide better results. In the upcoming \emph{Interpretation} section we compare both the normal and bias class weights models and observe the explanations produced by SHAP in order to compare the difference in feature attributions. 
+In both models when using the bias class weights discussed in chapter \ref{sec-class-imbalance} we see on average a $15\%$ drop in accuracy which is quite significant, however an enormous increase in \emph{recall} which means the bias versions are better at identifying clients which \emph{defaulted}. For credit companies where the purpose is to identify clients which may default on their loans, the bias weights provide better results. In the upcoming \emph{Interpretation} chapter we compare both the normal and bias class weights models and observe the explanations produced by SHAP in order to compare the difference in feature attributions. 
 \subsection{Raw Inputs vs WOE}
-When looking at the comparisons from the raw input features to the WOE transformed features in both our Logistic Regression results in Figure \ref{fig-log-results} and our Neural Network results in Figure \ref{fig-nn-results} there does not some to be a significant difference. The only noticeable difference is a slight increase in precision. WOE transformation are the standard when working in the credit industry and from these results it may seem like there isn't much merit in it, but we will see in our \emph{explanations} in section \ref{sec-interpretation} that there is a significant difference.
+When looking at the comparisons from the raw input features to the WOE transformed features in both the Logistic Regression results in Figure \ref{fig-log-results} and the Neural Network results in Figure \ref{fig-nn-results} there does not some to be a significant difference. The only noticeable difference is a slight increase in precision. WOE transformation are the standard when working in the credit industry and from these results it may seem like there isn't much merit in it, but we will see in the \emph{explanations} in chapter \ref{sec-interpretation} that there is a significant difference.
  \section{Feature descriptions} \label{sect-Feature-Descriptions}
  In order to make sense of feature attribution we first have to describe what each feature means. From our credit domain knowledge we are able to specify which features magnitudes increase proportionally to the risk that the client will default.
  
@@ -424,12 +427,12 @@ When looking at the comparisons from the raw input features to the WOE transform
  \end{description}
 %%%% Interpretation %%%%
 \section{Interpretation} \label{sec-interpretation}
-In this section we observe how the inherent interpretability of Logistic Regression compares to the explanations provided by SHAP of our Neural Network. We provide interpretation for both the normal and bias class weights models as well as a comparison between the attributions generated by our WOE features compared to the raw features.
+In this chapter we observe how the inherent interpretability of Logistic Regression compares to the explanations provided by SHAP of the Neural Network. We provide interpretation for both the normal and bias class weights models as well as a comparison between the attributions generated by the WOE features compared to the raw features.
 \subsection{Logistic Regression}
-As we have discussed in section \ref{sect:interpreting-logistic-regression} for Logistic Regression the weight coefficients are not enough to provide interpretability.  We have to extract the weight coefficients $w$ from the linear equation (\ref{eq:linear}) and also calculate their odds ratio (which is described in section \ref{sect:interpreting-logistic-regression}) with (\ref{eq-odds-ratio}). We have tabulated the weight coefficients as well as their respective odds ratios. We have also graphed the odds ratio for extra clarity. Table \ref{table:logistic} and Figure \ref{fig-odds-lr}  is for our raw input model. Table \ref{table:logistic-weighted} and Figure \ref{fig-odds-weighted} is for our raw input model with altered class weights. Lastly table \ref{table:logistic-woe} and Figure \ref{fig-odds-woe} is for our WOE model.
+As we have discussed in chapter \ref{sect:interpreting-logistic-regression} for Logistic Regression the weight coefficients are not enough to provide interpretability.  We have to extract the weight coefficients $w$ from the linear equation (\ref{eq:linear}) and also calculate their odds ratio (which is described in chapter \ref{sect:interpreting-logistic-regression}) with (\ref{eq-odds-ratio}). We have tabulated the weight coefficients as well as their respective odds ratios. We have also graphed the odds ratio for extra clarity. Table \ref{table:logistic} and Figure \ref{fig-odds-lr}  is for the raw input model. Table \ref{table:logistic-weighted} and Figure \ref{fig-odds-weighted} is for the raw input model with altered class weights. Lastly table \ref{table:logistic-woe} and Figure \ref{fig-odds-woe} is for the WOE model.
 
 \subsubsection{WOE weight coefficients}
-From table \ref{table:logistic-woe} we can see that all of our weight coefficients are positive for our WOE classifier. It may seem like every variable positively contributes towards the \emph{default} class. This is however not the case as we do not know the range of the magnitudes of our variables by just looking at this table. If the woe value of a feature in a specific bin is negative then even if the weight coefficient is positive it will provide a negative attribution. Therefore table \ref{table:logistic-woe} can not be considered sufficient information as we would need to view the range of the feature values to discern whether a feature decreases or increases the probability of \emph{defaulting}.
+From table \ref{table:logistic-woe} we can see that all of the weight coefficients are positive for the WOE classifier. It may seem like every variable positively contributes towards the \emph{default} class. This is however not the case as we do not know the range of the magnitudes of the variables by just looking at this table. If the woe value of a feature in a specific bin is negative then even if the weight coefficient is positive it will provide a negative attribution. Therefore table \ref{table:logistic-woe} can not be considered sufficient information as we would need to view the range of the feature values to discern whether a feature decreases or increases the probability of \emph{defaulting}.
 
  \begin{table}[h!]
  \footnotesize
@@ -556,12 +559,12 @@ From table \ref{table:logistic-woe} we can see that all of our weight coefficien
 
 
 \subsection{Neural Network}
-For our Neural Network we will be using \emph{Deep SHAP} as it leverages the composition of Neural Networks to significantly increase the speed of SHAP.
+For the Neural Network we will be using \emph{Deep SHAP} as it leverages the composition of Neural Networks to significantly increase the speed of SHAP.
 We will be looking at how SHAP explains individual predictions as well as the explanation for the entire model.
 \subsubsection{Model explanation}
-We start by explaining on a global level the attributions our model assigns to each input feature and compare it to our Logistic Regression explanations. Figure~ \ref{fig-deep-shap-NN} is the explanation for our normal network, Figure \ref{fig-deep-shap-weighted-NN} is for our bias class weights network, and Figure \ref{fig-deep-shap-WOE-NN} is our WOE network. Rather than just giving a single value for attributions SHAP is able to plot over multiple instances in our dataset and showcase how each feature attributes to different instances. The y-axes are our feature names and the x-axes are their corresponding SHAP values, larger values impacts our model more. Positive values attribute towards the \emph{default} class and negative values to the \emph{not default} class. The hue of a point ranges from blue to red where the redder a point the larger the magnitude of that feature was in that particular instance.
+We start by explaining on a global level the attributions the model assigns to each input feature and compare it to the Logistic Regression explanations. Figure~ \ref{fig-deep-shap-NN} is the explanation for the normal network, Figure \ref{fig-deep-shap-weighted-NN} is for the bias class weights network, and Figure \ref{fig-deep-shap-WOE-NN} is the WOE network. Rather than just giving a single value for attributions SHAP is able to plot over multiple instances in the dataset and showcase how each feature attributes to different instances. The y-axes are the feature names and the x-axes are their corresponding SHAP values, larger values impacts the model more. Positive values attribute towards the \emph{default} class and negative values to the \emph{not default} class. The hue of a point ranges from blue to red where the redder a point the larger the magnitude of that feature was in that particular instance.
 \paragraph{Explanation}
-Using the information from the \emph{Feature description} section we know that the larger the magnitude of the \emph{Age} feature the more it contributes against the client defaulting. In Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} we can see that if the larger the magnitude of age the SHAP value falls more into the negative region, this indicates that the older the client is, the less likely they are to \emph{default}. This coincides with our knowledge. On the inverse we know that the \emph{avg\_credit\_cost} feature contributes towards the client default, this is also shown in Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} where the instances where the magnitude of \emph{avg\_credit\_cost} is larger it's SHAP value and thus the higher contribution it had towards predicting that the client would default.
+Using the information from the \emph{Feature description} chapter we know that the larger the magnitude of the \emph{Age} feature the more it contributes against the client defaulting. In Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} we can see that if the larger the magnitude of age the SHAP value falls more into the negative region, this indicates that the older the client is, the less likely they are to \emph{default}. This coincides with our knowledge. On the inverse we know that the \emph{avg\_credit\_cost} feature contributes towards the client default, this is also shown in Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} where the instances where the magnitude of \emph{avg\_credit\_cost} is larger it's SHAP value and thus the higher contribution it had towards predicting that the client would default.
 
 \begin  {figure}[!htpb]
 \centering
@@ -584,7 +587,7 @@ Using the information from the \emph{Feature description} section we know that t
 \end{figure}
 
 \subsubsection{Individual predictions}
-An advantage of using a tool such as SHAP is that we are able to obtain explanations for individual predictions rather than just for the entire model. This is useful for credit employees as they this allows them to obtain explanations for an individual client. We have chosen a single client which has defaulted and in Figure \ref{fig-deep-shap-single-NN}, \ref{fig-deep-shap-weighted-single-NN} and \ref{fig-deep-shap-WOE-single-NN} we can see a plot of the explanation for it's prediction. Figure \ref{fig-deep-shap-single-NN} is the \emph{normal} class weights and the output of the model is that $27\%$ certain the client will \emph{default on their loan}. Figure \ref{fig-deep-shap-weighted-single-NN} is the explanation for the \emph{bias} class weights model and it is $71\%$ certain that the client will \emph{default}. Figure \ref{fig-deep-shap-WOE-single-NN} is the explanation for our WOE Neural Network and it is $37\%$ that the client will \emph{default}. The y-axes are the input features and the x-axes is the model output value. The bottom of the line is the average model output value, which the models default output value given that there is no information about the input features. As the line reaches the top, each feature either adds or subtracts from the models predicted value, therefore features that subtract from the value are negative attributions and those that add are positive attributions. The numbers in brackets are the values of that feature of this particular client standardized.
+An advantage of using a tool such as SHAP is that we are able to obtain explanations for individual predictions rather than just for the entire model. This is useful for credit employees as they this allows them to obtain explanations for an individual client. We have chosen a single client which has defaulted and in Figure \ref{fig-deep-shap-single-NN}, \ref{fig-deep-shap-weighted-single-NN} and \ref{fig-deep-shap-WOE-single-NN} we can see a plot of the explanation for it's prediction. Figure \ref{fig-deep-shap-single-NN} is the \emph{normal} class weights and the output of the model is that $27\%$ certain the client will \emph{default on their loan}. Figure \ref{fig-deep-shap-weighted-single-NN} is the explanation for the \emph{bias} class weights model and it is $71\%$ certain that the client will \emph{default}. Figure \ref{fig-deep-shap-WOE-single-NN} is the explanation for the WOE Neural Network and it is $37\%$ that the client will \emph{default}. The y-axes are the input features and the x-axes is the model output value. The bottom of the line is the average model output value, which the models default output value given that there is no information about the input features. As the line reaches the top, each feature either adds or subtracts from the models predicted value, therefore features that subtract from the value are negative attributions and those that add are positive attributions. The numbers in brackets are the values of that feature of this particular client standardized.
 
 \begin  {figure}[!htpb]
 \centering
@@ -608,13 +611,13 @@ An advantage of using a tool such as SHAP is that we are able to obtain explanat
 \end{figure}
 
 
-\subsection{Comparison} Comparing the weight coefficients obtained from Logistic Regression with the SHAP explanations we can see that although the SHAP values have a different meaning than the raw weight coefficients they are comparable. They both provide relative value of how much that particular feature would affect the prediction of our models. The SHAP explanations are far more descriptive as they are able to provide explanations over multiple instances, which shows consistency and we are also able to provide explanations for individual instances. Since the SHAP values are consistent with what we expect we can conclude that we have successfully provided explanations into this previously considered \emph{black-box} credit risk Neural Network.
+\subsection{Comparison} Comparing the weight coefficients obtained from Logistic Regression with the SHAP explanations we can see that although the SHAP values have a different meaning than the raw weight coefficients they are comparable. They both provide relative value of how much that particular feature would affect the prediction of the models. The SHAP explanations are far more descriptive as they are able to provide explanations over multiple instances, which shows consistency and we are also able to provide explanations for individual instances. Since the SHAP values are consistent with what we expect we can conclude that we have successfully provided explanations into this previously considered \emph{black-box} credit risk Neural Network.
 
-\subsection{Exposing a problem with our raw input models} \label{sect-problem-expose}
-If we refer back to section \ref{sect-Feature-Descriptions} we can see that  the \emph{active\_loans\_in\_arrears} feature is the number of active loans that the client currently has in arrears. An increase in its feature value would in turn cause the risk of the client to increase. As we can see for our WOE model in Figure \ref{fig-deep-shap-WOE-NN} the larger the magnitude of \emph{active\_loans\_in\_arrears} the higher the contribution towards the \emph{Default} class as expected. However looking at the SHAP explanations for our raw input models in Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} the larger  \emph{active\_loans\_in\_arrears} is the less likely the client is to \emph{default} . This means that there is an obvious flaw present with our raw input models with regards to this feature. This is not obvious from just observing our Logistic Regression models since it hard to determine how the feature reacts over multiple instances and different magnitudes by only looking at the features overall contribution. Even though the performance of the two models are relatively the same by viewing the SHAP explanations produced , we were able to identify this problem.
+\subsection{Exposing a problem with the raw input models} \label{sect-problem-expose}
+If we refer back to chapter \ref{sect-Feature-Descriptions} we can see that  the \emph{active\_loans\_in\_arrears} feature is the number of active loans that the client currently has in arrears. An increase in its feature value would in turn cause the risk of the client to increase. As we can see for the WOE model in Figure \ref{fig-deep-shap-WOE-NN} the larger the magnitude of \emph{active\_loans\_in\_arrears} the higher the contribution towards the \emph{Default} class as expected. However looking at the SHAP explanations for the raw input models in Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN} the larger  \emph{active\_loans\_in\_arrears} is the less likely the client is to \emph{default} . This means that there is an obvious flaw present with the raw input models with regards to this feature. This is not obvious from just observing the Logistic Regression models since it hard to determine how the feature reacts over multiple instances and different magnitudes by only looking at the features overall contribution. Even though the performance of the two models are relatively the same by viewing the SHAP explanations produced , we were able to identify this problem.
 
-\subsection{Monitoring changes within our architecture} \label{sect-architecure}
-Figure \ref{fig-deep-shap-WOE-sig} is the SHAP explanation of our WOE Neural Network without the hidden layer. When comparing this to Figure \ref{fig-deep-shap-WOE-NN} there is a noticeable difference as the \emph{worst\_arrears\_l24m\_woe} has the largest contribution. Thus by using SHAP we are able to determine how a change in our networks architecture affects the feature attributions.
+\subsection{Monitoring changes within the architecture} \label{sect-architecure}
+Figure \ref{fig-deep-shap-WOE-sig} is the SHAP explanation of the WOE Neural Network without the hidden layer. When comparing this to Figure \ref{fig-deep-shap-WOE-NN} there is a noticeable difference as the \emph{worst\_arrears\_l24m\_woe} has the largest contribution. Thus by using SHAP we are able to determine how a change in the networks architecture affects the feature attributions.
 \begin{figure}[!htpb]
 \centering
   \includegraphics[width=0.8\linewidth]{Credit_Images/Sigmoid_nn_shap.png}
@@ -623,7 +626,7 @@ Figure \ref{fig-deep-shap-WOE-sig} is the SHAP explanation of our WOE Neural Net
 \end{figure}
 
 \subsection{Attributions between normal and bias class weights}
-Comparing the feature attributions between Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN}, there are a few key differences. The first is that the order of the features are different which means the features which contribute the most differ. Looking at \emph{monthly\_inst\_to\_income} and \emph{total\_loan\_in\_arrears} in Figure  \ref{fig-deep-shap-weighted-NN}, it can be seen that they have stronger attributions towards the \emph{default} class in our weighted model. Another notable difference is the \emph{worst\_arrears\_l24m\_feature}, in Figure \ref{fig-deep-shap-weighted-NN} the maximum value possible SHAP value is larger which means that this feature can have a larger effect on the models outcome. From this we can see that it seems that by using the misclassification costs introduced in section \ref{sec-class-imbalance} some of our features were given more predictive power towards the \emph{default} class.
+Comparing the feature attributions between Figure \ref{fig-deep-shap-NN} and \ref{fig-deep-shap-weighted-NN}, there are a few key differences. The first is that the order of the features are different which means the features which contribute the most differ. Looking at \emph{monthly\_inst\_to\_income} and \emph{total\_loan\_in\_arrears} in Figure  \ref{fig-deep-shap-weighted-NN}, it can be seen that they have stronger attributions towards the \emph{default} class in the weighted model. Another notable difference is the \emph{worst\_arrears\_l24m\_feature}, in Figure \ref{fig-deep-shap-weighted-NN} the maximum value possible SHAP value is larger which means that this feature can have a larger effect on the models outcome. From this we can see that it seems that by using the misclassification costs introduced in chapter \ref{sec-class-imbalance} some of the features were given more predictive power towards the \emph{default} class.
 
 \subsection{Prediction strength relative to Feature magnitude} \label{sect-prediction-strength}
-With SHAP we are able to sample our explanations over multiple instances. If our chosen background instances are diverse, we are able to view how our feature attributions react over varying magnitudes. For example if we look at the odds ratio for \emph{worst\_status\_flg} in table \ref{table:logistic} we can see that the feature has an \emph{odds ratio} of $1.069937$ which by using our domain knowledge we know that this is a binary categorical variable which can only take on a value of 0 or 1. However if we did not have domain knowledge about this variable it could possibly be mistaken as a \emph{continuous variable} which makes it seem as though it could have a much larger contribution than it actually does. Now if we compare to this to our SHAP explanation in Figure \ref{fig-deep-shap-NN} we can see how the features contributions reacts at different values. From this we can see that regardless of it's magnitude the feature relatively has the same contribution if it is high and a small contribution when it is low. It would require more effort and observing the original feature to discern this from just the Logistic Regression explanation. This could possibly be used for \emph{Feature Selection}. By observing how the contribution of a feature changes over varying magnitudes we can choose to manually remove features which regardless of their intensity seem to add little value. If we once again look at Figure \ref{fig-deep-shap-NN}, the feature \emph{tot\_monthly\_instalment} seems have a very low SHAP Value even when it's feature value is high and could possibly be considered for removal. 
+With SHAP we are able to sample the explanations over multiple instances. If the chosen background instances are diverse, we are able to view how the feature attributions react over varying magnitudes. For example if we look at the odds ratio for \emph{worst\_status\_flg} in table \ref{table:logistic} we can see that the feature has an \emph{odds ratio} of $1.069937$ which by using our domain knowledge we know that this is a binary categorical variable which can only take on a value of 0 or 1. However if we did not have domain knowledge about this variable it could possibly be mistaken as a \emph{continuous variable} which makes it seem as though it could have a much larger contribution than it actually does. Now if we compare to this to the SHAP explanation in Figure \ref{fig-deep-shap-NN} we can see how the features contributions reacts at different values. From this we can see that regardless of it's magnitude the feature relatively has the same contribution if it is high and a small contribution when it is low. It would require more effort and observing the original feature to discern this from just the Logistic Regression explanation. This could possibly be used for \emph{Feature Selection}. By observing how the contribution of a feature changes over varying magnitudes we can choose to manually remove features which regardless of their intensity seem to add little value. If we once again look at Figure \ref{fig-deep-shap-NN}, the feature \emph{tot\_monthly\_instalment} seems have a very low SHAP Value even when it's feature value is high and could possibly be considered for removal. 
