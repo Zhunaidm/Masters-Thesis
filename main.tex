@@ -13,6 +13,7 @@
 \usepackage{setspace}
 \usepackage{fancybox}
 \usepackage{subcaption}
+\usepackage{dsfont}
 \usepackage{tabularx,rotating}
 \usepackage[colorlinks = true,
             linkcolor = black,
@@ -28,6 +29,7 @@
 %\setcitestyle{square}
 
 \DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
 
 \usepackage{eso-pic}%............................ Shipout commands for watermark
     \newcommand*{\WaterMark}[2][0.15\paperwidth]{%
@@ -73,7 +75,7 @@ are those of the author and are not necessarily to be attributed to the NRF.}
              }
              
 \begin{abstract}             
-    Calculating risk before providing loans is a common problem that credit companies face. The most common solution is credit employees manually assessing the risk of a client by reviewing their credit portfolios. This can be a slow process and is prone to human error. Recently credit companies have been adopting machine learning techniques in order to automate this process, however this has been limited to linear techniques due to interpretability being a strict requirement. Neural networks could provide significant improvements to the way credit risk is modeled, however these are still seen as black boxes. In this work we compare various techniques which claim to provide interpretability into these black boxes. We also use these techniques to provide explanations on a neural network trained on synthesized credit data.
+    Calculating risk before providing loans is a common problem that credit companies face. The most common solution is credit employees manually assessing the risk of a client by reviewing their credit portfolios. This can be a slow process and is prone to human error. Recently credit companies have been adopting machine learning techniques in order to automate this process, however this has been limited to linear techniques due to interpretability being a strict requirement. Neural networks could provide significant improvements to the way credit risk is modeled, however these are still seen as black boxes. In this work we compare various techniques which claim to provide interpretability into these black boxes. We also use these techniques to provide explanations on a neural network trained on credit data that has been provided to us.
 \end{abstract}
  \tableofcontents
  \clearpage
